@@ -4,7 +4,7 @@ use std::{
 };
 use thiserror::Error;
 
-use super::{Block, BlockHash, Transaction};
+use super::{Block, BlockHash};
 
 pub type BlockVec = Vec<Block>;
 
@@ -124,13 +124,21 @@ impl Blockchain {
 #[cfg(test)]
 mod tests {
     use crate::model::{
-        test_util::{alice, bob, carol},
+        test_util::{alice, bob},
         Address, Transaction,
     };
 
     use super::*;
 
     const NO_DIFFICULTY: u32 = 0;
+
+    fn farm_address() -> Address {
+        alice()
+    }
+
+    fn warehouse_address() -> Address {
+        bob()
+    }
 
     #[test]
     fn should_have_valid_genesis_block() {
@@ -155,17 +163,21 @@ mod tests {
     fn should_let_adding_valid_blocks() {
         let blockchain = Blockchain::new(NO_DIFFICULTY);
 
-        // create a valid block
+        // create a valid block with agricultural transactions
         let previous_hash = blockchain.get_last_block().hash;
         let tx1 = Transaction {
-            sender: bob(),
-            recipient: alice(),
-            data: "Harvest data".to_string(),
+            sender: farm_address(),
+            recipient: warehouse_address(),
+            data: r#"{"crop": "wheat", "quantity": "500kg", "quality": "Grade A"}"#.to_string(),
+            batch_id: "WHEAT-2024-001".to_string(),
+            event_type: "HARVEST".to_string(),
         };
         let tx2 = Transaction {
-            sender: alice(),
-            recipient: bob(),
-            data: "Transport data".to_string(),
+            sender: warehouse_address(),
+            recipient: farm_address(),
+            data: r#"{"vehicle": "TRUCK-42", "distance": "50km", "departure_time": "08:00"}"#.to_string(),
+            batch_id: "WHEAT-2024-001".to_string(),
+            event_type: "TRANSPORT".to_string(),
         };
         let block = Block::new(1, 0, previous_hash, vec![tx1, tx2]);
 

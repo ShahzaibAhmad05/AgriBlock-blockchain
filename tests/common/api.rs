@@ -59,10 +59,12 @@ impl Api for Server {
 
     fn add_valid_block(&self) -> Response<Body> {
         let last_block = self.get_last_block();
-        let coinbase = Transaction {
+        let transaction = Transaction {
             sender: ALICE.to_string(),
             recipient: ALICE.to_string(),
-            data: "coinbase".to_string(),
+            data: r#"{"event": "system_initialization"}"#.to_string(),
+            batch_id: "SYSTEM-INIT".to_string(),
+            event_type: "INITIALIZATION".to_string(),
         };
         let valid_block = Block {
             index: last_block.index + 1,
@@ -73,7 +75,7 @@ impl Api for Server {
             // the api automatically recalculates the hash...
             // ...so no need to add a valid one here
             hash: BlockHash::default(),
-            transactions: vec![coinbase],
+            transactions: vec![transaction],
         };
         self.add_block(&valid_block)
     }

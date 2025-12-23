@@ -68,10 +68,14 @@ fn test_should_let_add_transactions() {
 fn test_should_let_add_valid_block() {
     let node = ServerBuilder::new().start();
     let last_block = node.get_last_block();
-    let coinbase = Transaction {
+
+    // Create an agricultural tracking transaction
+    let transaction = Transaction {
         sender: ALICE.to_string(),
-        recipient: ALICE.to_string(),
-        data: "Coinbase data".to_string(),
+        recipient: BOB.to_string(),
+        data: r#"{"crop": "corn", "quantity": "300kg", "field": "Field-7"}"#.to_string(),
+        batch_id: "CORN-2024-042".to_string(),
+        event_type: "HARVEST".to_string(),
     };
 
     let valid_block = Block {
@@ -84,8 +88,7 @@ fn test_should_let_add_valid_block() {
         // the api automatically recalculates the hash...
         // ...so no need to add a valid one here
         hash: BlockHash::default(),
-        // must include the coinbase transaction
-        transactions: vec![coinbase],
+        transactions: vec![transaction],
     };
     let res = node.add_block(&valid_block);
     assert_eq!(res.status().as_u16(), 200);
